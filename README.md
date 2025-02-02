@@ -1,6 +1,6 @@
 # Postage
 
-Goals:
+## Goals
 - acts as a client forward proxy, allowing backend services to send clients messages in real time.
 - has an admin ui that shows the current state of the proxy. (Clients connected, mock messaging, etc.)
 - handles authentication of clients based on hmac signed tokens.
