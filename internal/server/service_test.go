@@ -3,7 +3,9 @@ package server
 import (
 	"context"
 	"errors"
+	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -111,4 +113,47 @@ func Test_runServices_stop_all_for_one_panic(t *testing.T) {
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrServicePanic)
 	require.ErrorIs(t, err, context.Canceled)
+}
+
+type HTTPServerMock struct {
+	ListenAndServeFunc func() error
+	ShutdownFunc       func(ctx context.Context) error
+}
+
+func (h HTTPServerMock) ListenAndServe() error {
+	return h.ListenAndServeFunc()
+}
+func (h HTTPServerMock) Shutdown(ctx context.Context) error {
+	return h.ShutdownFunc(ctx)
+}
+
+func Test_httpService_stops_when_canceled(t *testing.T) {
+	shutdownCalled := make(chan struct{})
+	srv := HTTPServerMock{
+		ListenAndServeFunc: func() error {
+			<-shutdownCalled
+			return http.ErrServerClosed
+		},
+		ShutdownFunc: func(ctx context.Context) error {
+			close(shutdownCalled)
+			return nil
+		},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	go cancel()
+	err := httpService(srv, time.Minute).Run(ctx)
+	require.NoError(t, err)
+}
+
+func Test_httpService_unblocks_when_shutdown(t *testing.T) {
+	testErr := errors.New("boom")
+	srv := HTTPServerMock{
+		ListenAndServeFunc: func() error {
+			return testErr
+		},
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	go cancel()
+	err := httpService(srv, time.Minute).Run(ctx)
+	require.ErrorIs(t, err, testErr)
 }
