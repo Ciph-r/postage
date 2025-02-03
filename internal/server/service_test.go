@@ -115,6 +115,7 @@ func Test_runServices_stop_all_for_one_panic(t *testing.T) {
 	require.ErrorIs(t, err, context.Canceled)
 }
 
+// HTTPServerMock satisfies the httpServer interface.
 type HTTPServerMock struct {
 	ListenAndServeFunc func() error
 	ShutdownFunc       func(ctx context.Context) error
@@ -127,7 +128,10 @@ func (h HTTPServerMock) Shutdown(ctx context.Context) error {
 	return h.ShutdownFunc(ctx)
 }
 
-func Test_httpService_stops_when_canceled(t *testing.T) {
+// Test_httpService_stops_when_cancelled checks that when the Service context is
+// cancelled the http servers Shutdown method is called to gracefully shutdown
+// the server.
+func Test_httpService_stops_when_cancelled(t *testing.T) {
 	shutdownCalled := make(chan struct{})
 	srv := HTTPServerMock{
 		ListenAndServeFunc: func() error {
@@ -145,15 +149,17 @@ func Test_httpService_stops_when_canceled(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func Test_httpService_unblocks_when_shutdown(t *testing.T) {
+// Test_httpService_stops_when_ListenAndServe_stops checks that the http Service
+// will unblock correctly if ListenAndServe stops for any reason. the http
+// servers Shutdown method should not be called in this case since the server is
+// no longer running.
+func Test_httpService_stops_when_ListenAndServe_stops(t *testing.T) {
 	testErr := errors.New("boom")
 	srv := HTTPServerMock{
 		ListenAndServeFunc: func() error {
 			return testErr
 		},
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	go cancel()
-	err := httpService(srv, time.Minute).Run(ctx)
+	err := httpService(srv, time.Minute).Run(context.Background())
 	require.ErrorIs(t, err, testErr)
 }
