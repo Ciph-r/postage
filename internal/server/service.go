@@ -66,8 +66,9 @@ type httpServer interface {
 	Shutdown(ctx context.Context) error
 }
 
-// httpService turns any httpService into a Service.
-func httpService(srv httpServer, timeout time.Duration) Service {
+// httpService turns any httpService into a Service. shutdownTimeout is the max
+// amount of time the shutdown process will wait to gracefully shutdown.
+func httpService(srv httpServer, shutdownTimeout time.Duration) Service {
 	return ServiceFunc(func(ctx context.Context) error {
 		srvStoppedErr := make(chan error)
 		go func() {
@@ -81,7 +82,7 @@ func httpService(srv httpServer, timeout time.Duration) Service {
 		case err := <-srvStoppedErr:
 			return err
 		case <-ctx.Done():
-			timeoutCtx, timeourCancel := context.WithTimeout(context.Background(), timeout)
+			timeoutCtx, timeourCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 			defer timeourCancel()
 			return srv.Shutdown(timeoutCtx)
 		}
