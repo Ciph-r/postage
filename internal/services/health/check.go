@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-func NewServer() *http.Server {
+func NewServer(cfg Config) *http.Server {
 	return &http.Server{
-		Addr:    ":9000",
+		Addr:    cfg.Addr,
 		Handler: http.HandlerFunc(Check),
 	}
 }
