@@ -24,19 +24,20 @@ func (fn ServiceFunc) Run(ctx context.Context) error {
 // runServices runs all specified services as a group under a given context. if
 // one service is stopped, all other services are signaled to stop as well.
 func runServices(ctx context.Context, svcs ...Service) error {
+	if len(svcs) < 1 {
+		return ctx.Err()
+	}
 	errs := make([]error, len(svcs))
 	var wg sync.WaitGroup
 	signalStopped := make(chan struct{})
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	if len(svcs) > 1 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			defer cancel()
-			<-signalStopped
-		}()
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer cancel()
+		<-signalStopped
+	}()
 	for i, svc := range svcs {
 		wg.Add(1)
 		go func(ctx context.Context, i int) {
