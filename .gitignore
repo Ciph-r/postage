@@ -1,3 +1,5 @@
 # IDE stuff
 .vscode
-
+__debug*
+__DEBUG*
+__Debug*
