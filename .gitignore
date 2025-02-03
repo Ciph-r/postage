@@ -3,3 +3,7 @@
 __debug*
 __DEBUG*
 __Debug*
+
+# local dev
+.env
+*.ignore.*
