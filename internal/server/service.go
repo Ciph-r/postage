@@ -83,8 +83,8 @@ func httpService(srv httpServer, shutdownTimeout time.Duration) Service {
 		case err := <-srvStoppedErr:
 			return err
 		case <-ctx.Done():
-			timeoutCtx, timeourCancel := context.WithTimeout(context.Background(), shutdownTimeout)
-			defer timeourCancel()
+			timeoutCtx, timeoutCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+			defer timeoutCancel()
 			return srv.Shutdown(timeoutCtx)
 		}
 	})
