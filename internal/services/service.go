@@ -32,14 +32,14 @@ func RunGroup(ctx context.Context, svcs ...Service) error {
 	}
 	errs := make([]error, len(svcs))
 	var wg sync.WaitGroup
-	signalStopped := make(chan struct{})
+	oneServiceHasStopped := make(chan struct{})
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		defer cancel()
-		<-signalStopped
+		<-oneServiceHasStopped
 	}()
 	for i, svc := range svcs {
 		wg.Add(1)
@@ -47,7 +47,7 @@ func RunGroup(ctx context.Context, svcs ...Service) error {
 			defer wg.Done()
 			defer func() {
 				select {
-				case signalStopped <- struct{}{}:
+				case oneServiceHasStopped <- struct{}{}:
 				default:
 				}
 			}()
