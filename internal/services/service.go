@@ -7,6 +7,10 @@ import (
 	"sync"
 )
 
+// ErrServicePanic is the error retuned when a service paniced and was its stack
+// trace was recovered.
+var ErrServicePanic = errors.New("service panic")
+
 // Service is a blocking process. It must gracefully shutdown if its context is
 // cqnceled.
 type Service interface {
@@ -58,7 +62,3 @@ func RunGroup(ctx context.Context, svcs ...Service) error {
 	wg.Wait()
 	return errors.Join(errs...)
 }
-
-// ErrServicePanic is the error retuned when a service paniced and was its stack
-// trace was recovered.
-var ErrServicePanic = errors.New("service panic")
