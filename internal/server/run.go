@@ -16,7 +16,7 @@ import (
 
 func Run(ctx context.Context) error {
 	slog.Info("server is starting")
-	// cancel the context if ctrl-c is signalled.
+	// gracefully handle ctrl-c by canceling the context.
 	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt, os.Kill)
 	defer cancel()
 	// load config
@@ -34,6 +34,6 @@ func Run(ctx context.Context) error {
 	if err := runServices(ctx, socketSvc, healthSvc); err != nil {
 		return fmt.Errorf("failed to run services: %w", err)
 	}
-	slog.Info("server has stopped")
+	slog.Info("server has gracefully stopped")
 	return nil
 }
