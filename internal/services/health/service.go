@@ -7,11 +7,12 @@ import (
 	"github.com/ciph-r/postage/internal/services"
 )
 
-func NewService(cfg Config) services.Service {
+func NewService(cfg Config, checkers ...Checker) services.Service {
 	mux := http.NewServeMux()
-	HandleCheck(mux)
-	return services.NewHTTP(&http.Server{
+	HandleCheck(mux, checkers...)
+	srv := &http.Server{
 		Addr:    cfg.Addr,
 		Handler: mux,
-	}, time.Second)
+	}
+	return services.NewHTTP(srv, time.Second)
 }
