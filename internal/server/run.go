@@ -26,7 +26,7 @@ func Run(ctx context.Context) error {
 		return fmt.Errorf("failed to parse config: %w", err)
 	}
 	// build server dependencies.
-	socketSvc := sockets.NewService()
+	socketSvc := sockets.NewService(cfg.Sockets)
 	healthSvc := health.NewService(cfg.Health)
 	// run all the services.
 	if err := services.RunGroup(ctx,
