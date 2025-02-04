@@ -1,11 +1,10 @@
-package server
+package services
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 )
 
 // Service is a blocking process. It must gracefully shutdown if its context is
@@ -21,9 +20,9 @@ func (fn ServiceFunc) Run(ctx context.Context) error {
 	return fn(ctx)
 }
 
-// runServices runs all specified services as a group under a given context. if
+// RunGroup runs all specified services as a group under a given context. if
 // one service is stopped, all other services are signaled to stop as well.
-func runServices(ctx context.Context, svcs ...Service) error {
+func RunGroup(ctx context.Context, svcs ...Service) error {
 	if len(svcs) < 1 {
 		return ctx.Err()
 	}
@@ -58,36 +57,6 @@ func runServices(ctx context.Context, svcs ...Service) error {
 	}
 	wg.Wait()
 	return errors.Join(errs...)
-}
-
-// httpServer is the interface of *http.Server and is here for testing
-// purposes.
-type httpServer interface {
-	ListenAndServe() error
-	Shutdown(ctx context.Context) error
-}
-
-// httpService turns any httpService into a Service. shutdownTimeout is the max
-// amount of time the shutdown process will wait to gracefully shutdown.
-func httpService(srv httpServer, shutdownTimeout time.Duration) Service {
-	return ServiceFunc(func(ctx context.Context) error {
-		srvStoppedErr := make(chan error)
-		go func() {
-			err := srv.ListenAndServe()
-			select {
-			case srvStoppedErr <- err:
-			default:
-			}
-		}()
-		select {
-		case err := <-srvStoppedErr:
-			return err
-		case <-ctx.Done():
-			timeoutCtx, timeourCancel := context.WithTimeout(context.Background(), shutdownTimeout)
-			defer timeourCancel()
-			return srv.Shutdown(timeoutCtx)
-		}
-	})
 }
 
 // ErrServicePanic is the error retuned when a service paniced and was its stack

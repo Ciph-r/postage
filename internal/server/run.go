@@ -6,9 +6,9 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/caarlos0/env/v11"
+	"github.com/ciph-r/postage/internal/services"
 	"github.com/ciph-r/postage/internal/services/health"
 	"github.com/ciph-r/postage/internal/services/sockets"
 	"github.com/joho/godotenv"
@@ -26,12 +26,13 @@ func Run(ctx context.Context) error {
 		return fmt.Errorf("failed to parse config: %w", err)
 	}
 	// build server dependencies.
-	socketSrv := sockets.NewServer()
-	socketSvc := httpService(socketSrv, time.Minute)
-	healthSrv := health.NewServer(cfg.Health)
-	healthSvc := httpService(healthSrv, time.Second)
+	socketSvc := sockets.NewService()
+	healthSvc := health.NewService(cfg.Health)
 	// run all the services.
-	if err := runServices(ctx, socketSvc, healthSvc); err != nil {
+	if err := services.RunGroup(ctx,
+		socketSvc,
+		healthSvc,
+	); err != nil {
 		return fmt.Errorf("failed to run services: %w", err)
 	}
 	slog.Info("server has gracefully stopped")
