@@ -9,7 +9,7 @@ import (
 
 func NewService(cfg Config) services.Service {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", Check)
+	HandleCheck(mux)
 	return services.NewHTTP(&http.Server{
 		Addr:    cfg.Addr,
 		Handler: mux,

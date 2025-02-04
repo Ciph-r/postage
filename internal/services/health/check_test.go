@@ -8,9 +8,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCheck(t *testing.T) {
+func TestHandleCheck(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	Check(w, r)
+	mux := http.NewServeMux()
+	HandleCheck(mux)
+	mux.ServeHTTP(w, r)
 	require.Equal(t, http.StatusOK, w.Code)
 }

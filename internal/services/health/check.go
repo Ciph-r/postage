@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
-func Check(w http.ResponseWriter, r *http.Request) {
-	slog.Debug("health check performed")
+func HandleCheck(mux *http.ServeMux) {
+	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		slog.Debug("health check performed")
+	})
 }
