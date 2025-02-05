@@ -8,10 +8,11 @@ import (
 )
 
 func NewService(cfg Config) services.Service {
-
+	mux := http.NewServeMux()
+	HandleSocket(mux)
 	srv := &http.Server{
 		Addr:    cfg.Addr,
-		Handler: nil, //TODO: set handler with socket router.
+		Handler: mux,
 	}
 	return services.NewHTTP(srv, time.Minute)
 }
