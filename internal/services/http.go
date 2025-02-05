@@ -12,7 +12,7 @@ type httpServer interface {
 	Shutdown(ctx context.Context) error
 }
 
-// NewHTTP turns any httpService into a Service. shutdownTimeout is the max
+// NewHTTP turns any httpServer into a Service. shutdownTimeout is the max
 // amount of time the shutdown process will wait to gracefully shutdown.
 func NewHTTP(srv httpServer, shutdownTimeout time.Duration) Service {
 	return ServiceFunc(func(ctx context.Context) error {
