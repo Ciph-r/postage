@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-// HandleCheck is used to inform infestructure deployment tool of the health of the Postage server.
+// HandleCheck is used to inform deployment services of the health of the Postage server.
 func HandleCheck(mux *http.ServeMux, checkers ...Checker) {
 	mux.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		slog.Debug("health check performed")
