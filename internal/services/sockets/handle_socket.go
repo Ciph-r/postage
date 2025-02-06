@@ -39,12 +39,14 @@ func HandleSocket(mux *http.ServeMux) {
 		wg.Add(1)
 		//Remove client when they disconnect
 		go func() {
-			for {
-				_, _, err := connectedClients.conns[clientID].ReadMessage()
-				if err != nil {
-					connectedClients.DeleteClient(clientID)
-					wg.Done()
-					break
+			if conn, exists := connectedClients.GetClient(clientID); exists {
+				for {
+					_, _, err := conn.ReadMessage()
+					if err != nil {
+						connectedClients.DeleteClient(clientID)
+						wg.Done()
+						break
+					}
 				}
 			}
 		}()
