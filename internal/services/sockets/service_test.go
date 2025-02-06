@@ -42,6 +42,7 @@ func closeWS(t *testing.T, conn *websocket.Conn) {
 	t.Helper()
 	err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	require.NoError(t, err)
+	require.NoError(t, conn.Close())
 }
 
 // TestHandleEcho tests that HandleEcho returns whatever message is sent to it.
