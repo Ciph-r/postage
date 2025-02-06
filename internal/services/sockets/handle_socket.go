@@ -9,33 +9,18 @@ import (
 )
 
 // Globals
-var clients = make(map[*websocket.Conn]bool)
+var connectedClients = NewConnectedClients()
 var streamChan = make(chan []byte, 100)
-var lock sync.Mutex
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true //Allows all origins for now
 	},
 }
 
-// HandleSocket will accept websocket connections on '/ws'
+// HandleSocket will accept websocket connections on '/ws/{clientID}'
 func HandleSocket(mux *http.ServeMux) {
-	//Streams data to all connected clients
-	//TODO: Make it possible to only broadcast to specific groups of users.
-	go func() {
-		for data := range streamChan {
-			for conn := range clients {
-				err := conn.WriteMessage(websocket.TextMessage, data)
-				if err != nil {
-					slog.Error("Error sending to client", "reason", err)
-					lock.Lock()
-					delete(clients, conn)
-					lock.Unlock()
-				}
-			}
-		}
-	}()
-	mux.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /ws/{clientID}", func(w http.ResponseWriter, r *http.Request) {
+		clientID := r.PathValue("clientID")
 		var wg sync.WaitGroup
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
@@ -43,21 +28,34 @@ func HandleSocket(mux *http.ServeMux) {
 			http.Error(w, "Failed to upgrade connection", http.StatusInternalServerError)
 			return
 		}
-		defer conn.Close()
-		lock.Lock()
-		clients[conn] = true
-		lock.Unlock()
+
+		if _, exists := connectedClients.GetClient(clientID); exists {
+			slog.Error("Client already connected", "reason", err)
+			return
+		}
+		connectedClients.AddClient(clientID, conn)
+		defer connectedClients.DeleteClient(clientID)
+
 		wg.Add(1)
 		//Remove client when they disconnect
 		go func() {
 			for {
-				_, _, err := conn.ReadMessage()
+				_, _, err := connectedClients.conns[clientID].ReadMessage()
 				if err != nil {
-					lock.Lock()
-					delete(clients, conn)
-					lock.Unlock()
+					connectedClients.DeleteClient(clientID)
 					wg.Done()
 					break
+				}
+			}
+		}()
+		//Send messages to connected client
+		go func() {
+			for {
+				if conn, exists := connectedClients.GetClient(clientID); exists {
+					err := conn.WriteMessage(websocket.TextMessage, <-streamChan)
+					if err != nil {
+						slog.Error("Error sending to client", "reason", err)
+					}
 				}
 			}
 		}()
