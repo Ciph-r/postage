@@ -31,9 +31,9 @@ func convertToWSURL(target string) string {
 	return wss
 }
 
-// closeWS informs the server to shutdown its connection. this prevents
-// dangling connections on the server, which may take minutes for the server to
-// gc otherwise.
+// closeWS informs the server to shutdown its connection. this prevents dangling
+// connections on the server, which may take minutes for the server to gc
+// otherwise.
 //
 // example pulled from here:
 // https://github.com/gorilla/websocket/blob/main/examples/echo/client.go#L71C1-L72C1
