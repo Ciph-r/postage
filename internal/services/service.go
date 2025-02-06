@@ -7,12 +7,12 @@ import (
 	"sync"
 )
 
-// ErrServicePanic is the error retuned when a service paniced and was its stack
+// ErrServicePanic is the error returned when a service panics and was its stack
 // trace was recovered.
 var ErrServicePanic = errors.New("service panic")
 
 // Service is a blocking process. It must gracefully shutdown if its context is
-// cqnceled.
+// canceled.
 type Service interface {
 	Run(ctx context.Context) error
 }

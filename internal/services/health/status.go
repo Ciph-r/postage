@@ -8,7 +8,7 @@ const (
 	Unknown
 )
 
-// MarshalText satifies the encoding.TextMarshaler interface.
+// MarshalText satisfies the encoding.TextMarshaler interface.
 func (s Status) MarshalText() (text []byte, err error) {
 	switch s {
 	case Healthy:
