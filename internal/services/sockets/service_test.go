@@ -31,6 +31,18 @@ func convertToWSURL(target string) string {
 	return wss
 }
 
+// closeWS informs the server to shutdown its connection. this prevents
+// dangling connections on the server, which may take minutes for the server to
+// gc otherwise.
+//
+// example pulled from here:
+// https://github.com/gorilla/websocket/blob/main/examples/echo/client.go#L71C1-L72C1
+func closeWS(t *testing.T, conn *websocket.Conn) {
+	t.Helper()
+	err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	require.NoError(t, err)
+}
+
 // TestHandleEcho tests that HandleEcho returns whatever message is sent to it.
 func TestHandleEcho(t *testing.T) {
 	srv := newHandleEchoServer(t)
@@ -40,6 +52,7 @@ func TestHandleEcho(t *testing.T) {
 	require.NoError(t, err)
 	// connect to echo handler over the test server
 	conn, _, err := websocket.DefaultDialer.Dial(target, nil)
+	t.Cleanup(func() { closeWS(t, conn) })
 	require.NoError(t, err)
 	// send a message
 	w, err := conn.NextWriter(websocket.TextMessage)
