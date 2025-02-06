@@ -40,8 +40,11 @@ func convertToWSURL(target string) string {
 // https://github.com/gorilla/websocket/blob/main/examples/echo/client.go#L71C1-L72C1
 func closeWS(t *testing.T, conn *websocket.Conn) {
 	t.Helper()
-	err := conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	// send close msg to server
+	closeHandler := conn.CloseHandler()
+	err := closeHandler(websocket.CloseNormalClosure, "")
 	require.NoError(t, err)
+	// close client conn
 	require.NoError(t, conn.Close())
 }
 
