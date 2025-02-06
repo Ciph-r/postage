@@ -15,7 +15,7 @@ import (
 )
 
 // newHandleEchoServer builds a httptest server that serves HandleEcho. it
-// cleans up teh server when the test is finished.
+// cleans up the server when the test is finished.
 func newHandleEchoServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	mux := http.NewServeMux()
@@ -25,6 +25,7 @@ func newHandleEchoServer(t *testing.T) *httptest.Server {
 	return srv
 }
 
+// convertToWSURL changes http/https to ws/wss respectively.
 func convertToWSURL(target string) string {
 	ws := strings.Replace(target, "http://", "ws://", 1)
 	wss := strings.Replace(ws, "https://", "wss://", 1)
