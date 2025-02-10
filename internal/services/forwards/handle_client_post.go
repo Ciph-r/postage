@@ -10,10 +10,12 @@ import (
 	"github.com/ciph-r/postage/internal/traffic"
 )
 
+// HandleClientPost allows a BE service to post data to a connected client by its client id.
 func HandleClientPost[C traffic.ClientConnection](mux *http.ServeMux, clients traffic.ClientLoadBalancer[C]) {
 	mux.HandleFunc("POST /clients/{clientID}", func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		clientID := r.PathValue("clientID")
+		// get connected client
 		clientConn, err := clients.GetClientConnection(ctx, clientID)
 		switch {
 		case errors.Is(err, traffic.ErrNotFound):
@@ -24,6 +26,7 @@ func HandleClientPost[C traffic.ClientConnection](mux *http.ServeMux, clients tr
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
+		// send data to client
 		resp, err := clientConn.Post(r.Body)
 		switch {
 		case errors.Is(err, traffic.ErrDisconnected):
@@ -35,6 +38,7 @@ func HandleClientPost[C traffic.ClientConnection](mux *http.ServeMux, clients tr
 			return
 		}
 		defer resp.Close()
+		// forward response back to caller
 		switch n, err := io.Copy(w, resp); {
 		case errors.Is(err, traffic.ErrDisconnected):
 			http.Error(w, fmt.Sprintf("transfered %d bytes", n), http.StatusNotFound)
