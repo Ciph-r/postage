@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-// ClientLoadBalancer intercepts requests for connected client and
+// ClientLoadBalancer intercepts requests for connected client.
 type ClientLoadBalancer[C ClientConnection] interface {
 	GetClientConnection(ctx context.Context, id string) (C, error)
 }
