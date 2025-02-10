@@ -2,6 +2,7 @@ package forwards
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,21 +17,29 @@ func HandleClientPost[C traffic.ClientConnection](mux *http.ServeMux, clients tr
 		clientConn, err := clients.GetClientConnection(ctx, clientID)
 		switch {
 		case errors.Is(err, traffic.ErrNotFound):
-			http.Error(w, "specified client id is not connected", http.StatusNotFound)
+			http.Error(w, "", http.StatusNotFound)
 			return
 		case err != nil:
-			slog.Error("failed to get client sender", "clientID", clientID, "reason", err)
-			http.Error(w, "failed to get specified client", http.StatusInternalServerError)
+			slog.Error("failed to get client connection", "clientID", clientID, "reason", err)
+			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 		resp, err := clientConn.Post(r.Body)
-		if err != nil {
-			slog.Warn("failed to send request body", "reason", err)
+		switch {
+		case errors.Is(err, traffic.ErrDisconnected):
+			http.Error(w, "", http.StatusNotFound)
+			return
+		case err != nil:
+			slog.Warn("failed to post request body", "reason", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
 		defer resp.Close()
-		if n, err := io.Copy(w, resp); err != nil {
+		switch n, err := io.Copy(w, resp); {
+		case errors.Is(err, traffic.ErrDisconnected):
+			http.Error(w, fmt.Sprintf("transfered %d bytes", n), http.StatusNotFound)
+			return
+		case err != nil:
 			slog.Warn("failed to copy response body", "bytes written", n, "reason", err)
 			http.Error(w, "", http.StatusInternalServerError)
 			return

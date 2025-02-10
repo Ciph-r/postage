@@ -49,3 +49,49 @@ func TestHandleClientPost_not_connected(t *testing.T) {
 	mux.ServeHTTP(w, r)
 	require.Equal(t, http.StatusNotFound, w.Code)
 }
+
+func TestHandleClientPost_disconencted_during_send(t *testing.T) {
+	clientConnectionMock := &ClientConnectionMock{
+		PostFunc: func(send io.Reader) (recv io.ReadCloser, err error) {
+			return nil, traffic.ErrDisconnected
+		},
+	}
+	clientLoadBalancerMock := &ClientLoadBalancerMock{
+		GetClientConnectionFunc: func(ctx context.Context, id string) (*ClientConnectionMock, error) {
+			return clientConnectionMock, nil
+		},
+	}
+	mux := http.NewServeMux()
+	HandleClientPost(mux, clientLoadBalancerMock)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/clients/1", strings.NewReader("foo"))
+	mux.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestHandleClientPost_disconencted_during_recv(t *testing.T) {
+	readCloserMock := &ReadCloserMock{
+		ReadFunc: func(p []byte) (n int, err error) {
+			return 0, traffic.ErrDisconnected
+		},
+		CloseFunc: func() error {
+			return nil
+		},
+	}
+	clientConnectionMock := &ClientConnectionMock{
+		PostFunc: func(send io.Reader) (recv io.ReadCloser, err error) {
+			return readCloserMock, nil
+		},
+	}
+	clientLoadBalancerMock := &ClientLoadBalancerMock{
+		GetClientConnectionFunc: func(ctx context.Context, id string) (*ClientConnectionMock, error) {
+			return clientConnectionMock, nil
+		},
+	}
+	mux := http.NewServeMux()
+	HandleClientPost(mux, clientLoadBalancerMock)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/clients/1", strings.NewReader("foo"))
+	mux.ServeHTTP(w, r)
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
