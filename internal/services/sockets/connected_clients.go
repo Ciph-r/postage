@@ -34,7 +34,7 @@ func (c *ConnectedClients) DeleteClient(id string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if _, exists := c.conns[id]; exists {
-		c.conns[id].Close()
-		delete(c.conns, id)
+		defer delete(c.conns, id)
+		defer c.conns[id].Close()
 	}
 }
