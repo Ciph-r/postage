@@ -16,15 +16,15 @@ import (
 // forwarded to the client, and the clients response is written back to the
 // service.
 func TestHandleClientPost(t *testing.T) {
-	clientLoadBalancerMock := &LoadBalancerMock{
-		ForwardFunc: func(ctx context.Context, socketID string, r io.Reader) error {
+	loadBalancerMock := &LoadBalancerMock{
+		SendSocketFunc: func(ctx context.Context, socketID string, r io.ReadCloser) error {
 			require.Equal(t, "1", socketID)
 			require.Equal(t, "foo", mustReadStr(t, r))
 			return nil
 		},
 	}
 	mux := http.NewServeMux()
-	HandleClientPost(mux, clientLoadBalancerMock)
+	HandleClientPost(mux, loadBalancerMock)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/clients/1", strings.NewReader("foo"))
 	mux.ServeHTTP(w, r)
