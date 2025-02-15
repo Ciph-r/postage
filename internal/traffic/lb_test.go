@@ -9,6 +9,7 @@ import (
 )
 
 func ExampleLoadBalancer_OpenSocket() {
+	// mock LoadBalancer impl
 	var lb LoadBalancer = LoadBalancerMock{
 		OpenSocketFunc: func(id string) (Socket, error) {
 			return SocketMock{
@@ -24,7 +25,6 @@ func ExampleLoadBalancer_OpenSocket() {
 			}, nil
 		},
 	}
-	var w bytes.Buffer
 	ctx := context.Background()
 	// open the socket
 	socket, err := lb.OpenSocket("1")
@@ -33,6 +33,8 @@ func ExampleLoadBalancer_OpenSocket() {
 	}
 	defer socket.Close()
 	// loop the socket
+	var w bytes.Buffer
+	defer fmt.Println(w.String())
 	for {
 		select {
 		case <-ctx.Done():
@@ -41,11 +43,14 @@ func ExampleLoadBalancer_OpenSocket() {
 			if !ok {
 				return // chan is empty and closed.
 			}
-			_, _ = io.Copy(&w, r)
+			defer r.Close()
+			if _, err := io.Copy(&w, r); err != nil {
+				return
+			}
 		}
-		fmt.Println(w.String())
 	}
-	// Outputs: foo
+	// Outputs:
+	// foo
 }
 
 type LoadBalancerMock struct {
