@@ -1,19 +1,16 @@
 package traffic
 
 import (
+	"context"
 	"io"
 )
 
-// ClientLoadBalancer intercepts requests for connected client.
-type ClientLoadBalancer interface {
-	RegisterSocket(id string, conn websocketConn)
-	GetSocketReader() <-chan io.ReadCloser
-
-	RegisterForward(is string, r io.ReadCloser)
-	GetForwardReader() <-chan io.ReadCloser
+// LoadBalancer intercepts requests for connected client.
+type LoadBalancer interface {
+	RegisterSocket(id string) (<-chan Forward, error)
+	Forward(ctx context.Context, socketID string, r io.Reader) error
 }
 
-type websocketConn interface {
-	NextReader() (messageType int, r io.Reader, err error)
-	NextWriter(messageType int) (io.WriteCloser, error)
+type Forward interface {
+	io.Reader
 }
