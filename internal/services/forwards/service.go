@@ -10,7 +10,7 @@ import (
 
 func NewService(cfg Config, cc traffic.LoadBalancer) services.Service {
 	mux := http.NewServeMux()
-	HandleClientPost(mux, cc)
+	HandleSocketPost(mux, cc)
 	srv := &http.Server{
 		Addr:    cfg.Addr,
 		Handler: mux,
