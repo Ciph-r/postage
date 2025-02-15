@@ -27,7 +27,7 @@ func ExampleLoadBalancer_OpenSocket() {
 	var w bytes.Buffer
 	ctx := context.Background()
 	// open the socket
-	socket, err := lb.OpenSocket("foo")
+	socket, err := lb.OpenSocket("1")
 	if err != nil {
 		return
 	}
