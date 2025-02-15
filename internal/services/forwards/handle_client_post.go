@@ -12,7 +12,7 @@ func HandleClientPost(mux *http.ServeMux, clients traffic.LoadBalancer) {
 		ctx := r.Context()
 		clientID := r.PathValue("clientID")
 		// get connected client
-		if err := clients.Forward(ctx, clientID, r.Body); err != nil {
+		if err := clients.SendSocket(ctx, clientID, r.Body); err != nil {
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
