@@ -16,7 +16,7 @@ import (
 // forwarded to the client, and the clients response is written back to the
 // service.
 func TestHandleClientPost(t *testing.T) {
-	clientLoadBalancerMock := &ClientLoadBalancerMock{
+	clientLoadBalancerMock := &LoadBalancerMock{
 		ForwardFunc: func(ctx context.Context, socketID string, r io.Reader) error {
 			require.Equal(t, "1", socketID)
 			require.Equal(t, "foo", mustReadStr(t, r))
