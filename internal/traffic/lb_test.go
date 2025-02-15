@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func ExampleLoadBalancerOpenSocket() {
+func ExampleLoadBalancer_OpenSocket() {
 	var lb LoadBalancer = LoadBalancerMock{
 		OpenSocketFunc: func(id string) (Socket, error) {
 			return SocketMock{

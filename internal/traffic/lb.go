@@ -15,7 +15,7 @@ type LoadBalancer interface {
 	SendSocket(ctx context.Context, socketID string, r io.ReadCloser) error
 }
 
-// Socket is a long lived connection that is waited on to receive income
+// Socket is a long lived connection that is waited on to receive incoming
 // messages in the form of io.ReadCloser's.
 type Socket interface {
 	// Recv a io.ReadCloser. caller should loop this until done and then call
