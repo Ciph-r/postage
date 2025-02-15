@@ -8,9 +8,9 @@ import (
 	"github.com/ciph-r/postage/internal/traffic"
 )
 
-func NewService[C traffic.ClientConnection](cfg Config, cc traffic.ClientLoadBalancer[C]) services.Service {
+func NewService(cfg Config, lb traffic.LoadBalancer) services.Service {
 	mux := http.NewServeMux()
-	HandleClientPost(mux, cc)
+	HandleSocketPost(mux, lb)
 	srv := &http.Server{
 		Addr:    cfg.Addr,
 		Handler: mux,

@@ -3,35 +3,16 @@ package forwards
 import (
 	"context"
 	"io"
+
+	"github.com/ciph-r/postage/internal/traffic"
 )
 
-// ClientLoadBalancerMock satisfies traffic.ClientLoadBalancer interface.
-type ClientLoadBalancerMock struct {
-	GetClientConnectionFunc func(ctx context.Context, id string) (*ClientConnectionMock, error)
+// LoadBalancerMock satisfies traffic.ClientLoadBalancer interface.
+type LoadBalancerMock struct {
+	traffic.LoadBalancer
+	SendSocketFunc func(ctx context.Context, socketID string, r io.ReadCloser) error
 }
 
-func (c *ClientLoadBalancerMock) GetClientConnection(ctx context.Context, id string) (*ClientConnectionMock, error) {
-	return c.GetClientConnectionFunc(ctx, id)
-}
-
-// ClientConnectionMock satisfies the traffic.ClientConnection interface.
-type ClientConnectionMock struct {
-	PostFunc func(send io.Reader) (recv io.ReadCloser, err error)
-}
-
-func (c *ClientConnectionMock) Post(send io.Reader) (recv io.ReadCloser, err error) {
-	return c.PostFunc(send)
-}
-
-// ReadCloserMock satisfies the ReadCloser interface.
-type ReadCloserMock struct {
-	CloseFunc func() error
-	ReadFunc  func(p []byte) (n int, err error)
-}
-
-func (r *ReadCloserMock) Close() error {
-	return r.CloseFunc()
-}
-func (r *ReadCloserMock) Read(p []byte) (n int, err error) {
-	return r.ReadFunc(p)
+func (c *LoadBalancerMock) SendSocket(ctx context.Context, socketID string, r io.ReadCloser) error {
+	return c.SendSocketFunc(ctx, socketID, r)
 }
