@@ -62,11 +62,11 @@ func HandleSocket(mux *http.ServeMux) {
 	})
 }
 
-// Replaces the channel that was previously used. Sends a binary message to client with {clientID} and returns a ReadCloser
+// Replaces the channel that was previously used. Sends a text message to client with {clientID} and returns a ReadCloser
 // TODO: This functionality needs to be adapted into the Post function used by the traffic client interface
 func sendToClient(clientId string, r io.Reader) (io.ReadCloser, error) {
 	if conn, exists := connectedClients.GetClient(clientId); exists {
-		w, err := conn.NextWriter(websocket.BinaryMessage)
+		w, err := conn.NextWriter(websocket.TextMessage)
 		if err != nil {
 			return nil, err
 		}
