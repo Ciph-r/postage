@@ -12,7 +12,7 @@ type LoadBalancer interface {
 	OpenSocket(id string) (Socket, error)
 	// SendSocket sends a reader to an open socket. If the
 	// socket is not open it returns ErrNotFound.
-	SendSocket(ctx context.Context, socketID string, r io.ReadCloser) error
+	SendSocket(ctx context.Context, socketID string, r io.Reader) error
 }
 
 // Socket is a long lived connection that is waited on to receive incoming

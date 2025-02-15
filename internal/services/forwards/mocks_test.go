@@ -10,9 +10,9 @@ import (
 // LoadBalancerMock satisfies traffic.ClientLoadBalancer interface.
 type LoadBalancerMock struct {
 	traffic.LoadBalancer
-	SendSocketFunc func(ctx context.Context, socketID string, r io.ReadCloser) error
+	SendSocketFunc func(ctx context.Context, socketID string, r io.Reader) error
 }
 
-func (c *LoadBalancerMock) SendSocket(ctx context.Context, socketID string, r io.ReadCloser) error {
+func (c *LoadBalancerMock) SendSocket(ctx context.Context, socketID string, r io.Reader) error {
 	return c.SendSocketFunc(ctx, socketID, r)
 }
