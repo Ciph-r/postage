@@ -54,11 +54,11 @@ func ExampleLoadBalancer_OpenSocket() {
 }
 
 type LoadBalancerMock struct {
-	SendSocketFunc func(ctx context.Context, socketID string, r io.ReadCloser) error
+	SendSocketFunc func(ctx context.Context, socketID string, r io.Reader) error
 	OpenSocketFunc func(id string) (Socket, error)
 }
 
-func (c LoadBalancerMock) SendSocket(ctx context.Context, socketID string, r io.ReadCloser) error {
+func (c LoadBalancerMock) SendSocket(ctx context.Context, socketID string, r io.Reader) error {
 	return c.SendSocketFunc(ctx, socketID, r)
 }
 

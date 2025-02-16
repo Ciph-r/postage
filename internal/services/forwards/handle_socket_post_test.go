@@ -18,7 +18,7 @@ import (
 // service.
 func TestHandleSocketPost(t *testing.T) {
 	loadBalancerMock := &LoadBalancerMock{
-		SendSocketFunc: func(ctx context.Context, socketID string, r io.ReadCloser) error {
+		SendSocketFunc: func(ctx context.Context, socketID string, r io.Reader) error {
 			require.Equal(t, "1", socketID)
 			require.Equal(t, "foo", mustReadStr(t, r))
 			return nil
@@ -34,7 +34,7 @@ func TestHandleSocketPost(t *testing.T) {
 
 func TestHandleSocketPost_socket_id_not_open(t *testing.T) {
 	loadBalancerMock := &LoadBalancerMock{
-		SendSocketFunc: func(ctx context.Context, socketID string, r io.ReadCloser) error {
+		SendSocketFunc: func(ctx context.Context, socketID string, r io.Reader) error {
 			return traffic.ErrNotFound
 		},
 	}
